@@ -130,6 +130,18 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
     Raises:
         Exception: if ODE solving has errors
     """
+    DIR = '/home/knzwnao/projects/Aliro-IBM-Qutrit/qutrit_cr_simulation/logs'
+
+    import datetime
+    import numpy as np
+    import pickle
+
+    now_str = str(datetime.datetime.now()).replace(' ', '.').replace(':', '.')
+    fname = 'psi_{}'.format(now_str)
+    psi_temps = []
+
+    def save_psi(psi, t):
+        psi_temps.append(psi * np.exp(-1j * pulse_de_model.h_diag_elems * t))
 
     solver_options = PulseSimOptions() if solver_options is None else solver_options
 
@@ -141,6 +153,7 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
         ODE.integrate(t)
         if ODE.successful():
             psi = ODE.y / dznrm2(ODE.y)
+            save_psi(psi, ODE.t)
         else:
             err_msg = 'ODE method exited with status: %s' % ODE.return_code()
             raise Exception(err_msg)
@@ -148,5 +161,8 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
     # apply final rotation to come out of rotating frame
     psi_rot = np.exp(-1j * pulse_de_model.h_diag_elems * ODE.t)
     psi *= psi_rot
+
+    with open('{}/{}.pk'.format(DIR, fname), 'wb') as fp:
+        pickle.dump(psi_temps, fp)
 
     return psi, ODE.t
