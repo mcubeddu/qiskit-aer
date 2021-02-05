@@ -140,10 +140,6 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
     fname = 'psi_{}'.format(now_str)
     psi_temps = []
 
-    def save_psi(psi, t):
-        psi = np.copy(psi)
-        psi_temps.append(psi * np.exp(-1j * pulse_de_model.h_diag_elems * t))
-
     solver_options = PulseSimOptions() if solver_options is None else solver_options
 
     ODE = setup_de_solver(exp, y0, pulse_de_model, solver_options.de_options)
@@ -154,7 +150,8 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
         ODE.integrate(t)
         if ODE.successful():
             psi = ODE.y / dznrm2(ODE.y)
-            save_psi(psi, ODE.t)
+            # psi in rotating frame
+            psi_temps.append(psi)
         else:
             err_msg = 'ODE method exited with status: %s' % ODE.return_code()
             raise Exception(err_msg)
