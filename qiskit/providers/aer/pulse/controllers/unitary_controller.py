@@ -141,6 +141,7 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
     psi_temps = []
 
     def save_psi(psi, t):
+        psi = np.copy(psi)
         psi_temps.append(psi * np.exp(-1j * pulse_de_model.h_diag_elems * t))
 
     solver_options = PulseSimOptions() if solver_options is None else solver_options
