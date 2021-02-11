@@ -162,5 +162,6 @@ def unitary_evolution(exp, y0, pulse_de_model, solver_options=None):
 
     with open('{}/{}.pk'.format(DIR, fname), 'wb') as fp:
         pickle.dump(psi_temps, fp)
+    print('dumped to {}/{}.pk'.format(DIR, fname))
 
     return psi, ODE.t
